@@ -122,12 +122,10 @@
     .papel {
       position: absolute;
       inset: 0 0 auto;
-      height: 58px;
+      height: 22px;
       pointer-events: none;
       background:
-        linear-gradient(135deg, transparent 0 34%, rgba(255,255,255,.42) 34% 42%, transparent 42%),
         repeating-linear-gradient(90deg, #d94f43 0 54px, #f2b84b 54px 108px, #168f76 108px 162px, #2866b1 162px 216px, #b73b72 216px 270px);
-      clip-path: polygon(0 0, 100% 0, 100% 55%, 96% 100%, 92% 55%, 88% 100%, 84% 55%, 80% 100%, 76% 55%, 72% 100%, 68% 55%, 64% 100%, 60% 55%, 56% 100%, 52% 55%, 48% 100%, 44% 55%, 40% 100%, 36% 55%, 32% 100%, 28% 55%, 24% 100%, 20% 55%, 16% 100%, 12% 55%, 8% 100%, 4% 55%, 0 100%);
       opacity: .96;
       z-index: 2;
     }
@@ -611,6 +609,7 @@
         totalFlowers: total,
         fireballs: [],
         hurtTimer: 0,
+        respawnFlash: 0,
         respawnPoint: { x: 82, y: 410 },
         won: false,
         over: false,
@@ -778,6 +777,7 @@
       p.vy += mountedGravity * dt;
       if (p.ride) p.vy = Math.max(p.vy, -JUMP_POWER * .75);
       p.invincible = Math.max(0, p.invincible - dt);
+      state.respawnFlash = Math.max(0, state.respawnFlash - dt);
       p.fireCooldown = Math.max(0, p.fireCooldown - dt);
       if (p.ride) {
         p.rideTimer = Math.max(0, p.rideTimer - dt);
@@ -819,9 +819,36 @@
       const p = state.player;
       if (!p.onGround || p.vy !== 0) return;
       const ground = state.level.platforms.find(platform => overlaps(platformAt(p.x, p.y + p.h + 2, p.w, 4), platform));
-      if (ground && ground.w > 120) {
-        state.respawnPoint = { x: Math.max(40, p.x - 24), y: Math.max(120, p.y) };
+      const candidate = { x: Math.max(ground ? ground.x + 28 : 40, p.x - 24), y: Math.max(120, p.y) };
+      if (ground && isSafeRespawn(candidate.x, candidate.y, ground)) {
+        state.respawnPoint = candidate;
       }
+    }
+
+    function isSafeRespawn(x, y, platform) {
+      if (!platform || platform.vx || platform.w < 150) return false;
+      if (x < platform.x + 26 || x > platform.x + platform.w - 60) return false;
+      const testBox = platformAt(x - 36, y - 22, 108, 92);
+      const hazardBox = platformAt(x - 130, y - 84, 294, 150);
+      const nearSpike = state.level.spikes.some(spike => overlaps(testBox, platformAt(spike.x - 70, spike.y - 50, spike.w + 140, spike.h + 88)));
+      const nearEnemy = state.level.enemies.some(enemy => !enemy.squashed && overlaps(hazardBox, platformAt(enemy.x - 80, enemy.y - 56, enemy.w + 160, enemy.h + 96)));
+      return !nearSpike && !nearEnemy;
+    }
+
+    function findSafeRespawn() {
+      const p = state.player;
+      const candidates = [];
+      for (const platform of state.level.platforms) {
+        if (platform.w < 150 || platform.y < 450) continue;
+        for (let x = platform.x + 34; x < platform.x + platform.w - 58; x += 70) {
+          const y = platform.y - p.h;
+          if (isSafeRespawn(x, y, platform)) candidates.push({ x, y });
+        }
+      }
+      if (!candidates.length) return { x: 82, y: 410 };
+      const behind = candidates.filter(point => point.x <= p.x + 20);
+      const pool = behind.length ? behind : candidates;
+      return pool.reduce((best, point) => Math.abs(point.x - p.x) < Math.abs(best.x - p.x) ? point : best, pool[0]);
     }
 
     function shootFireball() {
@@ -959,13 +986,16 @@
 
     function finishHurtRespawn() {
       const p = state.player;
+      state.respawnPoint = findSafeRespawn();
       p.x = state.respawnPoint.x;
       p.y = state.respawnPoint.y;
       p.vx = 0;
       p.vy = 0;
       p.onGround = false;
+      p.invincible = Math.max(p.invincible, 1.35);
       state.fireballs = [];
-      state.message = "Maryvel is back. Keep going!";
+      state.respawnFlash = 1.15;
+      state.message = "Safe respawn. Keep going!";
       state.cameraX = clamp(p.x - W * .38, 0, Math.max(0, state.level.width - W));
     }
 
@@ -981,6 +1011,7 @@
       state.player = newPlayer();
       state.fireballs = [];
       state.hurtTimer = 0;
+      state.respawnFlash = 0;
       state.respawnPoint = { x: 82, y: 410 };
       state.cameraX = 0;
       state.transition = 1.7;
@@ -1022,6 +1053,7 @@
       drawWorldDecor(now);
       drawPlatforms();
       drawSpikes();
+      drawRespawnMarker(now);
       for (const flower of state.level.flowers) drawFlower(flower, now);
       for (const colibri of state.level.colibris) drawColibri(colibri, now);
       drawGift(state.level.gift, now);
@@ -1031,6 +1063,7 @@
       ctx.restore();
       drawForeground(now);
       drawMessage();
+      if (state.respawnFlash > 0) drawRespawnFlash(now);
       if (state.hurtTimer > 0) drawHurtFlash(now);
       if (state.transition > 0) drawTransition();
       if (state.over) drawEndCard("Try Again", "Restart to continue Maryvel's birthday quest.");
@@ -1094,7 +1127,6 @@
         drawPalmTree(x + 335, 500, .82);
         drawCactus(x + 50, 500);
         drawAltar(x + 190, 450, now);
-        drawPapelLine(x + 20, 118, 260);
       }
     }
 
@@ -1172,21 +1204,6 @@
       ctx.fill();
     }
 
-    function drawPapelLine(x, y, w) {
-      const colors = ["#d94f43", "#f2b84b", "#168f76", "#2866b1", "#b73b72"];
-      for (let i = 0; i < w; i += 34) {
-        ctx.fillStyle = colors[(i / 34) % colors.length];
-        ctx.beginPath();
-        ctx.moveTo(x + i, y);
-        ctx.lineTo(x + i + 28, y);
-        ctx.lineTo(x + i + 22, y + 24);
-        ctx.lineTo(x + i + 14, y + 15);
-        ctx.lineTo(x + i + 6, y + 24);
-        ctx.closePath();
-        ctx.fill();
-      }
-    }
-
     function drawPlatforms() {
       for (const platform of [...state.level.platforms, ...state.level.moving]) drawPlatform(platform, Boolean(platform.vx));
     }
@@ -1230,6 +1247,33 @@
           ctx.fill();
         }
       }
+    }
+
+    function drawRespawnMarker(now) {
+      const point = state.respawnPoint;
+      if (!point) return;
+      const x = point.x + 17;
+      const y = point.y + 58;
+      const pulse = Math.sin(now / 180) * 4;
+      ctx.save();
+      ctx.globalAlpha = .78;
+      ctx.strokeStyle = "#fff7e8";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(x, y - 12, 18 + pulse, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = "#00d9ff";
+      ctx.beginPath();
+      ctx.moveTo(x, y - 48);
+      ctx.lineTo(x + 16, y - 18);
+      ctx.lineTo(x, y - 26);
+      ctx.lineTo(x - 16, y - 18);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "#17336f";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.restore();
     }
 
     function drawFlower(f, now) {
@@ -1490,7 +1534,25 @@
       ctx.textAlign = "center";
       ctx.fillText("Ouch!", W / 2, 168);
       ctx.font = "800 20px Avenir Next, Segoe UI, sans-serif";
-      ctx.fillText("Maryvel got hit", W / 2, 202);
+      ctx.fillText("Respawning at a safe checkpoint", W / 2, 202);
+      ctx.font = "900 32px Avenir Next, Segoe UI, sans-serif";
+      ctx.fillText(Math.max(1, Math.ceil(state.hurtTimer)), W / 2, 246);
+      ctx.textAlign = "left";
+    }
+
+    function drawRespawnFlash(now) {
+      const alpha = Math.min(.7, state.respawnFlash);
+      ctx.fillStyle = `rgba(0, 217, 255, ${alpha * .18})`;
+      ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = `rgba(255, 247, 232, ${alpha})`;
+      ctx.lineWidth = 8;
+      ctx.beginPath();
+      ctx.arc(W / 2, H / 2, 86 - state.respawnFlash * 24, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = `rgba(255, 247, 232, ${alpha})`;
+      ctx.font = "900 34px Avenir Next, Segoe UI, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("Safe Respawn", W / 2, H / 2 + 10);
       ctx.textAlign = "left";
     }
 
