@@ -254,22 +254,6 @@
       gap: 8px;
     }
 
-    .volume-row {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 9px;
-      align-items: center;
-      padding: 9px 11px;
-      border-radius: 8px;
-      background: rgba(255,255,255,.64);
-      font-weight: 900;
-    }
-
-    .volume-row input {
-      width: 100%;
-      accent-color: var(--blue);
-    }
-
     .overlay {
       position: fixed;
       inset: 0;
@@ -500,10 +484,6 @@
         <button id="restart">Restart</button>
         <button id="openPrize" disabled>Open Birthday Gift</button>
       </div>
-      <label class="volume-row">
-        Music
-        <input id="musicVolume" type="range" min="0" max="100" value="55" aria-label="Music volume">
-      </label>
 
       <p class="note">Keyboard: A/D or arrows to run, W/Space/Up to jump, F to shoot while riding a colibrí. Jump on patrols to squash them.</p>
     </aside>
@@ -531,7 +511,6 @@
     const questPowerEl = document.querySelector("#questPower");
     const questControlsEl = document.querySelector("#questControls");
     const musicButton = document.querySelector("#music");
-    const musicVolume = document.querySelector("#musicVolume");
     const prizeButton = document.querySelector("#openPrize");
     const restartButton = document.querySelector("#restart");
     const overlay = document.querySelector("#letterOverlay");
@@ -548,7 +527,6 @@
     let state;
     let lastTime = performance.now();
     let audioCtx;
-    let musicGain;
     let musicTimer;
     let musicOn = false;
     let noteIndex = 0;
@@ -556,80 +534,66 @@
     const levels = [
       {
         name: "Mercado de Flores",
-        width: 2700,
-        time: 130,
-        flowers: 10,
+        width: 2300,
+        time: 115,
+        flowers: 8,
         message: "Level 1: Mercado de Flores",
         palette: ["#28a8ff", "#76e4ff", "#14a05f"],
         platforms: [
           rect(0, GROUND_Y, 560, 76), rect(650, GROUND_Y, 420, 76), rect(1180, GROUND_Y, 460, 76), rect(1770, GROUND_Y, 530, 76),
-          rect(2360, GROUND_Y, 340, 76), rect(330, 398, 165, 24), rect(750, 350, 150, 24), rect(1040, 410, 150, 24), rect(1380, 338, 170, 24), rect(1645, 420, 145, 24),
-          ...pyramidSteps(2130, GROUND_Y)
+          rect(330, 398, 165, 24), rect(750, 350, 150, 24), rect(1040, 410, 150, 24), rect(1380, 338, 170, 24), rect(1645, 420, 145, 24)
         ],
         moving: [],
-        flowersPos: [[210, 440], [390, 354], [790, 306], [1100, 366], [1438, 294], [1580, 452], [1855, 454], [2085, 432], [2260, 314], [2550, 440]],
+        flowersPos: [[210, 440], [390, 354], [790, 306], [1100, 366], [1438, 294], [1580, 452], [1855, 454], [2085, 432]],
         colibris: [{ x: 920, y: 250, type: "ruby" }],
         enemies: [{ x: 705, y: 462, min: 650, max: 1020, speed: 95 }, { x: 1250, y: 462, min: 1190, max: 1590, speed: 105 }],
         spikes: [rect(585, 486, 48, 22), rect(1110, 486, 52, 22), rect(1694, 486, 54, 22)],
-        gift: { x: 2600, y: 424 }
+        gift: { x: 2200, y: 424 }
       },
       {
         name: "Pueblo Mágico Rooftops",
-        width: 3300,
-        time: 140,
-        flowers: 12,
+        width: 2800,
+        time: 120,
+        flowers: 10,
         message: "Level 2: Pueblo Mágico Rooftops",
         palette: ["#1399ff", "#8df1ff", "#ff4f5f"],
         platforms: [
           rect(0, GROUND_Y, 460, 76), rect(560, GROUND_Y, 380, 76), rect(1060, GROUND_Y, 330, 76), rect(1550, GROUND_Y, 310, 76), rect(2030, GROUND_Y, 770, 76),
-          rect(2920, GROUND_Y, 380, 76),
           rect(440, 402, 130, 22), rect(720, 342, 132, 22), rect(1010, 286, 130, 22), rect(1325, 372, 150, 22),
-          rect(1740, 318, 135, 22), rect(1990, 402, 150, 22), rect(2280, 332, 150, 22), ...pyramidSteps(2680, GROUND_Y)
+          rect(1740, 318, 135, 22), rect(1990, 402, 150, 22), rect(2280, 332, 150, 22)
         ],
         moving: [{ x: 900, y: 430, w: 128, h: 20, min: 820, max: 1100, speed: 90 }, { x: 1900, y: 250, w: 120, h: 20, min: 1840, max: 2100, speed: 110 }],
-        flowersPos: [[180, 440], [495, 356], [780, 298], [1075, 242], [1375, 328], [1605, 452], [1800, 274], [2038, 358], [2334, 288], [2620, 440], [2820, 314], [3140, 440]],
+        flowersPos: [[180, 440], [495, 356], [780, 298], [1075, 242], [1375, 328], [1605, 452], [1800, 274], [2038, 358], [2334, 288], [2620, 440]],
         colibris: [{ x: 1165, y: 210, type: "emerald" }, { x: 2240, y: 245, type: "violet" }],
         enemies: [{ x: 600, y: 462, min: 565, max: 920, speed: 125 }, { x: 1570, y: 462, min: 1550, max: 1840, speed: 140 }, { x: 2180, y: 462, min: 2035, max: 2720, speed: 150 }],
         spikes: [rect(480, 486, 52, 22), rect(1125, 486, 42, 22), rect(1418, 486, 70, 22), rect(2145, 486, 54, 22)],
-        gift: { x: 3208, y: 424 }
+        gift: { x: 2708, y: 424 }
       },
       {
         name: "Noche de Fiesta",
-        width: 3900,
-        time: 150,
-        flowers: 14,
+        width: 3300,
+        time: 125,
+        flowers: 12,
         message: "Level 3: Noche de Fiesta",
         palette: ["#184dff", "#c43dff", "#10155f"],
         platforms: [
           rect(0, GROUND_Y, 410, 76), rect(520, GROUND_Y, 270, 76), rect(930, GROUND_Y, 260, 76), rect(1340, GROUND_Y, 250, 76),
-          rect(1740, GROUND_Y, 290, 76), rect(2200, GROUND_Y, 300, 76), rect(2700, GROUND_Y, 600, 76), rect(3500, GROUND_Y, 400, 76),
+          rect(1740, GROUND_Y, 290, 76), rect(2200, GROUND_Y, 300, 76), rect(2700, GROUND_Y, 600, 76),
           rect(310, 382, 130, 20), rect(650, 318, 120, 20), rect(1040, 382, 130, 20), rect(1280, 304, 116, 20),
           rect(1540, 240, 116, 20), rect(1880, 352, 132, 20), rect(2135, 280, 116, 20), rect(2505, 352, 132, 20),
-          rect(2860, 312, 130, 20), ...pyramidSteps(3180, GROUND_Y)
+          rect(2860, 312, 130, 20)
         ],
         moving: [{ x: 800, y: 420, w: 110, h: 18, min: 800, max: 1010, speed: 135 }, { x: 1665, y: 410, w: 112, h: 18, min: 1600, max: 1860, speed: 150 }, { x: 2390, y: 235, w: 105, h: 18, min: 2300, max: 2580, speed: 165 }],
-        flowersPos: [[180, 440], [362, 338], [700, 274], [980, 452], [1098, 338], [1328, 260], [1585, 196], [1940, 308], [2170, 236], [2450, 190], [2918, 268], [3130, 436], [3320, 314], [3710, 432]],
+        flowersPos: [[180, 440], [362, 338], [700, 274], [980, 452], [1098, 338], [1328, 260], [1585, 196], [1940, 308], [2170, 236], [2450, 190], [2918, 268], [3130, 436]],
         colibris: [{ x: 510, y: 310, type: "gold" }, { x: 1420, y: 210, type: "ruby" }, { x: 2640, y: 270, type: "emerald" }],
         enemies: [{ x: 560, y: 462, min: 520, max: 780, speed: 165 }, { x: 940, y: 462, min: 930, max: 1180, speed: 175 }, { x: 1775, y: 462, min: 1740, max: 2020, speed: 185 }, { x: 2760, y: 462, min: 2700, max: 3240, speed: 195 }],
         spikes: [rect(430, 486, 70, 22), rect(1220, 486, 82, 22), rect(2060, 486, 110, 22), rect(2605, 486, 58, 22)],
-        gift: { x: 3810, y: 424 }
+        gift: { x: 3210, y: 424 }
       }
     ];
 
     function rect(x, y, w, h) {
       return { x, y, w, h };
-    }
-
-    function pyramidSteps(x, baseY) {
-      return [
-        rect(x, baseY - 36, 64, 36),
-        rect(x + 58, baseY - 72, 64, 36),
-        rect(x + 116, baseY - 108, 64, 36),
-        rect(x + 174, baseY - 144, 64, 36),
-        rect(x + 232, baseY - 108, 64, 36),
-        rect(x + 290, baseY - 72, 64, 36),
-        rect(x + 348, baseY - 36, 64, 36)
-      ];
     }
 
     function newPlayer() {
@@ -697,21 +661,11 @@
     }
 
     function startAudio() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        musicGain = audioCtx.createGain();
-        musicGain.gain.value = Number(musicVolume.value) / 100;
-        musicGain.connect(audioCtx.destination);
-      }
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (audioCtx.state === "suspended") audioCtx.resume();
     }
 
-    function startMusicIfNeeded() {
-      startAudio();
-      if (!musicOn) toggleMusic();
-    }
-
-    function tone(freq, duration = .12, type = "sine", gain = .045, delay = 0, route = "sfx") {
+    function tone(freq, duration = .12, type = "sine", gain = .045, delay = 0) {
       if (!audioCtx) return;
       const start = audioCtx.currentTime + delay;
       const osc = audioCtx.createOscillator();
@@ -722,7 +676,7 @@
       vol.gain.exponentialRampToValueAtTime(gain, start + .015);
       vol.gain.exponentialRampToValueAtTime(0.0001, start + duration);
       osc.connect(vol);
-      vol.connect(route === "music" && musicGain ? musicGain : audioCtx.destination);
+      vol.connect(audioCtx.destination);
       osc.start(start);
       osc.stop(start + duration + .03);
     }
@@ -774,18 +728,13 @@
       }
     }
 
-    function updateMusicVolume() {
-      if (!audioCtx || !musicGain) return;
-      musicGain.gain.setTargetAtTime(Number(musicVolume.value) / 100, audioCtx.currentTime, .04);
-    }
-
     function playMusicTick() {
       if (!musicOn || !audioCtx) return;
       const melody = [392, 440, 494, 523, 587, 523, 494, 440, 392, 494, 587, 659, 587, 523, 494, 440];
       const bass = [196, 196, 220, 220, 247, 247, 220, 220];
       const freq = melody[noteIndex % melody.length];
-      tone(freq, .16, "triangle", .018, 0, "music");
-      if (noteIndex % 2 === 0) tone(bass[Math.floor(noteIndex / 2) % bass.length], .18, "sine", .014, 0, "music");
+      tone(freq, .16, "triangle", .018);
+      if (noteIndex % 2 === 0) tone(bass[Math.floor(noteIndex / 2) % bass.length], .18, "sine", .014);
       noteIndex += 1;
     }
 
@@ -1141,26 +1090,10 @@
     function drawWorldDecor(now) {
       const start = Math.floor(state.cameraX / 360) * 360 - 360;
       for (let x = start; x < state.cameraX + W + 480; x += 360) {
-        drawPyramidBackdrop(x + 250, 500);
         drawCactus(x + 50, 500);
-        drawGroundArtifacts(x + 150, 500, now);
+        drawAltar(x + 190, 450, now);
         drawPapelLine(x + 20, 118, 260);
       }
-    }
-
-    function drawPyramidBackdrop(x, y) {
-      ctx.save();
-      ctx.globalAlpha = .86;
-      const colors = ["#95613b", "#b87943", "#d19752", "#efb85c"];
-      for (let i = 0; i < 5; i++) {
-        ctx.fillStyle = colors[i % colors.length];
-        ctx.fillRect(x + i * 22, y - 34 - i * 28, 250 - i * 44, 28);
-        ctx.strokeStyle = "rgba(40,25,19,.28)";
-        ctx.strokeRect(x + i * 22, y - 34 - i * 28, 250 - i * 44, 28);
-      }
-      ctx.fillStyle = "#6b3c24";
-      ctx.fillRect(x + 102, y - 174, 46, 26);
-      ctx.restore();
     }
     function drawCactus(x, y) {
       ctx.fillStyle = "#168f76";
@@ -1172,59 +1105,18 @@
       ctx.fill();
     }
 
-    function drawGroundArtifacts(x, y, now) {
-      drawAltar(x, y, now);
-      drawClayPot(x + 106, y);
-      drawAgave(x + 160, y);
-      drawSerape(x - 34, y - 6);
-    }
-
     function drawAltar(x, y, now) {
       ctx.fillStyle = "#7a321f";
-      ctx.fillRect(x, y - 46, 86, 46);
+      ctx.fillRect(x, y - 42, 82, 42);
       ctx.fillStyle = "#f2b84b";
-      ctx.fillRect(x + 8, y - 64, 70, 18);
+      ctx.fillRect(x + 8, y - 58, 66, 16);
       ctx.fillStyle = "#d94f43";
-      ctx.fillRect(x + 20, y - 82, 46, 18);
+      ctx.fillRect(x + 18, y - 74, 46, 16);
       ctx.fillStyle = "#fff7e8";
       ctx.beginPath();
-      ctx.arc(x + 24, y - 91 + Math.sin(now / 220) * 2, 5, 0, Math.PI * 2);
-      ctx.arc(x + 62, y - 91 + Math.cos(now / 260) * 2, 5, 0, Math.PI * 2);
+      ctx.arc(x + 24, y - 83 + Math.sin(now / 220) * 2, 5, 0, Math.PI * 2);
+      ctx.arc(x + 58, y - 83 + Math.cos(now / 260) * 2, 5, 0, Math.PI * 2);
       ctx.fill();
-    }
-
-    function drawClayPot(x, y) {
-      ctx.fillStyle = "#a94b28";
-      ctx.beginPath();
-      ctx.ellipse(x, y - 18, 18, 22, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "#ffcf24";
-      ctx.fillRect(x - 18, y - 25, 36, 6);
-      ctx.strokeStyle = "#592817";
-      ctx.lineWidth = 3;
-      ctx.strokeRect(x - 14, y - 36, 28, 10);
-    }
-
-    function drawAgave(x, y) {
-      ctx.fillStyle = "#00a96b";
-      for (let i = -2; i <= 2; i++) {
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.quadraticCurveTo(x + i * 18, y - 34, x + i * 30, y - 60 + Math.abs(i) * 8);
-        ctx.quadraticCurveTo(x + i * 10, y - 26, x, y);
-        ctx.fill();
-      }
-    }
-
-    function drawSerape(x, y) {
-      const colors = ["#d94f43", "#f2b84b", "#168f76", "#2866b1", "#b73b72"];
-      for (let i = 0; i < 5; i++) {
-        ctx.fillStyle = colors[i];
-        ctx.fillRect(x + i * 12, y - 18, 12, 18);
-      }
-      ctx.strokeStyle = "#281913";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(x, y - 18, 60, 18);
     }
 
     function drawPapelLine(x, y, w) {
@@ -1580,7 +1472,7 @@
       if (["ArrowLeft", "ArrowRight", "ArrowUp", "Shift", " ", "w", "a", "d", "f", "x"].includes(key)) {
         event.preventDefault();
         keys.add(key);
-        startMusicIfNeeded();
+        startAudio();
       }
     });
 
@@ -1591,7 +1483,7 @@
       const press = event => {
         event.preventDefault();
         keys.add(key);
-        startMusicIfNeeded();
+        startAudio();
       };
       const release = () => keys.delete(key);
       button.addEventListener("pointerdown", press);
@@ -1601,8 +1493,6 @@
     });
 
     musicButton.addEventListener("click", toggleMusic);
-    musicVolume.addEventListener("input", updateMusicVolume);
-    canvas.addEventListener("pointerdown", startMusicIfNeeded);
     restartButton.addEventListener("click", resetGame);
     prizeButton.addEventListener("click", () => {
       if (state.won) overlay.classList.add("open");
