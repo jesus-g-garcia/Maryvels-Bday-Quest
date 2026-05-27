@@ -1315,6 +1315,9 @@
     function drawWorldDecor(now) {
       const start = Math.floor(state.cameraX / 360) * 360 - 360;
       if (state.levelIndex === 1) drawMayanPyramidIfGrounded(42, 500, .7);
+      if (state.levelIndex === 1) drawMonarchButterfly(210, 255, now);
+      if (state.levelIndex === 2) drawWaterfallIfGrounded(82, 500, now);
+      if (state.levelIndex === 3) drawCandlesIfGrounded(88, 500, now);
       for (let x = start; x < state.cameraX + W + 480; x += 360) {
         drawGroundedHills(x + 132, 500, 190, "#0a875b");
         drawGroundedHills(x + 204, 500, 150, "#076247");
@@ -1432,6 +1435,98 @@
       ctx.arc(5, 8, 7, 0, Math.PI * 2);
       ctx.arc(9, -4, 7, 0, Math.PI * 2);
       ctx.fill();
+      ctx.restore();
+    }
+
+    function drawMonarchButterfly(x, y, now) {
+      const flap = Math.sin(now / 90) * .28;
+      ctx.save();
+      ctx.translate(x, y + Math.sin(now / 260) * 10);
+      ctx.fillStyle = "rgba(255,247,232,.36)";
+      ctx.beginPath();
+      ctx.arc(0, 0, 52, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.rotate(Math.sin(now / 420) * .08);
+      ctx.fillStyle = "#281913";
+      ctx.fillRect(-4, -18, 8, 42);
+      ctx.fillStyle = "#ff8f1f";
+      for (const side of [-1, 1]) {
+        ctx.save();
+        ctx.scale(side, 1);
+        ctx.rotate(flap);
+        ctx.beginPath();
+        ctx.ellipse(24, -10, 25, 34, -.45, 0, Math.PI * 2);
+        ctx.ellipse(24, 20, 20, 24, .35, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#281913";
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        ctx.strokeStyle = "#fff7e8";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(8, -6);
+        ctx.lineTo(42, -25);
+        ctx.moveTo(9, 7);
+        ctx.lineTo(40, 12);
+        ctx.moveTo(9, 22);
+        ctx.lineTo(34, 34);
+        ctx.stroke();
+        ctx.restore();
+      }
+      ctx.restore();
+    }
+
+    function drawWaterfallIfGrounded(x, y, now) {
+      if (!hasGroundSpan(x, x + 170, y)) return;
+      ctx.save();
+      ctx.fillStyle = "#6b3c24";
+      ctx.fillRect(x, y - 152, 170, 152);
+      ctx.fillStyle = "#8b5a2b";
+      ctx.fillRect(x + 12, y - 136, 146, 136);
+      const water = ctx.createLinearGradient(x + 58, y - 130, x + 92, y);
+      water.addColorStop(0, "#d8fbff");
+      water.addColorStop(.45, "#35c8ff");
+      water.addColorStop(1, "#0878d8");
+      ctx.fillStyle = water;
+      ctx.fillRect(x + 58, y - 130, 54, 128);
+      ctx.strokeStyle = "rgba(255,255,255,.82)";
+      ctx.lineWidth = 4;
+      for (let i = 0; i < 4; i++) {
+        const sx = x + 66 + i * 12 + Math.sin(now / 180 + i) * 3;
+        ctx.beginPath();
+        ctx.moveTo(sx, y - 126);
+        ctx.lineTo(sx - 8, y - 6);
+        ctx.stroke();
+      }
+      ctx.fillStyle = "rgba(216,251,255,.7)";
+      ctx.beginPath();
+      ctx.ellipse(x + 85, y - 2, 62, 14, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawCandlesIfGrounded(x, y, now) {
+      if (!hasGroundSpan(x, x + 150, y)) return;
+      ctx.save();
+      ctx.fillStyle = "rgba(40,25,19,.25)";
+      ctx.fillRect(x - 8, y - 6, 166, 8);
+      for (let i = 0; i < 5; i++) {
+        const cx = x + i * 34;
+        const h = 42 + (i % 2) * 16;
+        ctx.fillStyle = i % 2 ? "#fff7e8" : "#f2d8a7";
+        ctx.fillRect(cx, y - h, 18, h);
+        ctx.strokeStyle = "#7a321f";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(cx, y - h, 18, h);
+        ctx.fillStyle = "#ffcf24";
+        ctx.beginPath();
+        ctx.ellipse(cx + 9, y - h - 12 + Math.sin(now / 130 + i) * 2, 7, 12, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#ff5d2f";
+        ctx.beginPath();
+        ctx.ellipse(cx + 9, y - h - 9, 3, 6, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
       ctx.restore();
     }
 
