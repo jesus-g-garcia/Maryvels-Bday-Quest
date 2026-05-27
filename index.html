@@ -1150,12 +1150,29 @@
 
     function drawSpikes() {
       for (const s of state.level.spikes) {
-        ctx.fillStyle = "#1f6f5f";
-        for (let x = s.x; x < s.x + s.w; x += 18) {
+        const glow = .35 + Math.sin(performance.now() / 130 + s.x) * .12;
+        ctx.fillStyle = `rgba(255, 42, 42, ${glow})`;
+        ctx.fillRect(s.x - 7, s.y - 8, s.w + 14, s.h + 14);
+        ctx.fillStyle = "#ffe02b";
+        ctx.fillRect(s.x - 4, s.y + s.h - 4, s.w + 8, 12);
+        ctx.fillStyle = "#281913";
+        ctx.fillRect(s.x - 4, s.y + s.h + 5, s.w + 8, 4);
+        for (let x = s.x - 2; x < s.x + s.w; x += 16) {
+          ctx.fillStyle = "#ffffff";
           ctx.beginPath();
           ctx.moveTo(x, s.y + s.h);
-          ctx.lineTo(x + 9, s.y);
-          ctx.lineTo(x + 18, s.y + s.h);
+          ctx.lineTo(x + 8, s.y - 18);
+          ctx.lineTo(x + 16, s.y + s.h);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = "#d91515";
+          ctx.lineWidth = 3;
+          ctx.stroke();
+          ctx.fillStyle = "#ff3030";
+          ctx.beginPath();
+          ctx.moveTo(x + 4, s.y + s.h - 3);
+          ctx.lineTo(x + 8, s.y - 8);
+          ctx.lineTo(x + 12, s.y + s.h - 3);
           ctx.closePath();
           ctx.fill();
         }
