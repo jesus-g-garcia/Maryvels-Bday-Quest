@@ -1117,6 +1117,7 @@
       for (let x = start; x < state.cameraX + W + 480; x += 360) {
         drawGroundedHills(x + 132, 500, 190, "#0a875b");
         drawGroundedHills(x + 204, 500, 150, "#076247");
+        drawMayanPyramidIfGrounded(x + 96, 500, .82);
         drawPalmIfGrounded(x + 285, 500, 1.05);
         drawPalmIfGrounded(x + 335, 500, .82);
         drawIfGrounded(x + 50, 500, 34, () => drawCactus(x + 50, 500));
@@ -1138,6 +1139,11 @@
       if (hasGroundSpan(x - footprint, x + footprint, y)) drawPalmTree(x, y, scale);
     }
 
+    function drawMayanPyramidIfGrounded(x, y, scale) {
+      const width = 210 * scale;
+      if (hasGroundSpan(x, x + width, y)) drawMayanPyramid(x, y, scale);
+    }
+
     function drawGroundedHills(x, groundY, width, color) {
       if (!hasGroundSpan(x, x + width, groundY)) return;
       ctx.fillStyle = color;
@@ -1147,6 +1153,36 @@
       ctx.quadraticCurveTo(x + width * .76, groundY - 58, x + width, groundY);
       ctx.closePath();
       ctx.fill();
+    }
+
+    function drawMayanPyramid(x, y, scale) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(scale, scale);
+      const levels = [
+        { x: 0, y: -28, w: 210, h: 28 },
+        { x: 18, y: -56, w: 174, h: 28 },
+        { x: 36, y: -84, w: 138, h: 28 },
+        { x: 54, y: -112, w: 102, h: 28 },
+        { x: 72, y: -140, w: 66, h: 28 }
+      ];
+      for (let i = 0; i < levels.length; i++) {
+        const step = levels[i];
+        ctx.fillStyle = i % 2 ? "#b87943" : "#d19752";
+        ctx.fillRect(step.x, step.y, step.w, step.h);
+        ctx.strokeStyle = "rgba(40,25,19,.42)";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(step.x, step.y, step.w, step.h);
+      }
+      ctx.fillStyle = "#6b3c24";
+      ctx.fillRect(84, -168, 42, 28);
+      ctx.fillStyle = "#281913";
+      ctx.fillRect(98, -154, 14, 14);
+      ctx.fillStyle = "#f2b84b";
+      for (let i = 0; i < 7; i++) {
+        ctx.fillRect(93 + i * 4, -138 + i * 18, 24 - i * 2, 5);
+      }
+      ctx.restore();
     }
 
     function drawPalmTree(x, y, scale) {
