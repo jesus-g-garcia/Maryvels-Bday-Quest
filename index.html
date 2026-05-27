@@ -523,6 +523,8 @@
         totalCollected: 0,
         totalFlowers: total,
         fireballs: [],
+        hurtTimer: 0,
+        respawnPoint: { x: 82, y: 410 },
         won: false,
         over: false,
         transition: 1.5,
@@ -646,6 +648,7 @@
     }
 
     function handleInput(dt) {
+      if (state.hurtTimer > 0) return;
       const p = state.player;
       const left = keys.has("ArrowLeft") || keys.has("a");
       const right = keys.has("ArrowRight") || keys.has("d");
@@ -719,6 +722,15 @@
 
       p.x = clamp(p.x, 0, level.width - p.w);
       if (p.y > H + 120) damage("Maryvel fell. Back to the path!");
+    }
+
+    function updateRespawnPoint() {
+      const p = state.player;
+      if (!p.onGround || p.vy !== 0) return;
+      const ground = state.level.platforms.find(platform => overlaps(platformAt(p.x, p.y + p.h + 2, p.w, 4), platform));
+      if (ground && ground.w > 120) {
+        state.respawnPoint = { x: Math.max(40, p.x - 24), y: Math.max(120, p.y) };
+      }
     }
 
     function shootFireball() {
@@ -840,19 +852,30 @@
 
     function damage(message) {
       const p = state.player;
-      if (p.invincible > 0 || state.won || state.over) return;
+      if (p.invincible > 0 || state.hurtTimer > 0 || state.won || state.over) return;
       state.hearts -= 1;
-      p.invincible = 1.35;
+      state.hurtTimer = state.hearts > 0 ? 1.05 : 0;
+      p.invincible = 1.85;
+      p.ride = null;
+      p.vx = -p.facing * 260;
+      p.vy = -360;
       hurtSound();
       state.message = state.hearts > 0 ? message : "The quest got you. Restart and try again.";
       if (state.hearts <= 0) {
         state.over = true;
-      } else {
-        p.x = Math.max(40, p.x - 90);
-        p.y = 380;
-        p.vx = 0;
-        p.vy = 0;
       }
+    }
+
+    function finishHurtRespawn() {
+      const p = state.player;
+      p.x = state.respawnPoint.x;
+      p.y = state.respawnPoint.y;
+      p.vx = 0;
+      p.vy = 0;
+      p.onGround = false;
+      state.fireballs = [];
+      state.message = "Maryvel is back. Keep going!";
+      state.cameraX = clamp(p.x - W * .38, 0, Math.max(0, state.level.width - W));
     }
 
     function advanceLevel() {
@@ -866,6 +889,8 @@
       state.level = prepareLevel(state.levelIndex);
       state.player = newPlayer();
       state.fireballs = [];
+      state.hurtTimer = 0;
+      state.respawnPoint = { x: 82, y: 410 };
       state.cameraX = 0;
       state.transition = 1.7;
       state.message = state.level.message;
@@ -874,6 +899,15 @@
 
     function update(dt, now) {
       if (state.over || state.won) return;
+      if (state.hurtTimer > 0) {
+        state.hurtTimer = Math.max(0, state.hurtTimer - dt);
+        updateLevelObjects(dt);
+        movePlayer(dt);
+        if (state.hurtTimer === 0) finishHurtRespawn();
+        state.cameraX = clamp(state.player.x - W * .38, 0, Math.max(0, state.level.width - W));
+        return;
+      }
+
       state.level.time -= dt;
       state.transition = Math.max(0, state.transition - dt);
       if (state.level.time <= 0) {
@@ -885,6 +919,7 @@
       handleInput(dt);
       updateLevelObjects(dt);
       movePlayer(dt);
+      updateRespawnPoint();
       collectAndCollide();
       state.cameraX = clamp(state.player.x - W * .38, 0, Math.max(0, state.level.width - W));
     }
@@ -905,6 +940,7 @@
       ctx.restore();
       drawForeground(now);
       drawMessage();
+      if (state.hurtTimer > 0) drawHurtFlash(now);
       if (state.transition > 0) drawTransition();
       if (state.over) drawEndCard("Try Again", "Restart to continue Maryvel's birthday quest.");
       if (state.won) drawEndCard("Gift Unlocked", "Open the birthday gift to reveal the prize.");
@@ -1278,6 +1314,22 @@
       ctx.font = "900 44px Avenir Next, Segoe UI, sans-serif";
       ctx.textAlign = "center";
       ctx.fillText(state.level.name, W / 2, H / 2);
+      ctx.textAlign = "left";
+    }
+
+    function drawHurtFlash(now) {
+      const pulse = .22 + Math.sin(now / 55) * .08;
+      ctx.fillStyle = `rgba(217, 39, 43, ${pulse})`;
+      ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = "rgba(255, 247, 232, .95)";
+      ctx.lineWidth = 10;
+      ctx.strokeRect(18, 18, W - 36, H - 36);
+      ctx.fillStyle = "#fff7e8";
+      ctx.font = "900 48px Avenir Next, Segoe UI, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("Ouch!", W / 2, 168);
+      ctx.font = "800 20px Avenir Next, Segoe UI, sans-serif";
+      ctx.fillText("Maryvel got hit", W / 2, 202);
       ctx.textAlign = "left";
     }
 
