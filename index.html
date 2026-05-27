@@ -1114,10 +1114,10 @@
 
     function drawWorldDecor(now) {
       const start = Math.floor(state.cameraX / 360) * 360 - 360;
+      if (state.levelIndex === 0) drawMayanPyramidIfGrounded(1360, 500, .9);
       for (let x = start; x < state.cameraX + W + 480; x += 360) {
         drawGroundedHills(x + 132, 500, 190, "#0a875b");
         drawGroundedHills(x + 204, 500, 150, "#076247");
-        drawMayanPyramidIfGrounded(x + 96, 500, .82);
         drawPalmIfGrounded(x + 285, 500, 1.05);
         drawPalmIfGrounded(x + 335, 500, .82);
         drawIfGrounded(x + 50, 500, 34, () => drawCactus(x + 50, 500));
