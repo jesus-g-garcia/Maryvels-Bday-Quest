@@ -649,8 +649,8 @@
     const overlay = document.querySelector("#letterOverlay");
     const closeLetter = document.querySelector("#closeLetter");
 
-    const W = 1024;
-    const H = 576;
+    const W = canvas.width;
+    const H = canvas.height;
     const GROUND_Y = 500;
     const GRAVITY = 1780;
     const MOVE_SPEED = 330;
@@ -663,20 +663,6 @@
     let musicTimer;
     let musicOn = false;
     let noteIndex = 0;
-    let renderScale = 1;
-
-    function resizeCanvasForDisplay() {
-      const rect = canvas.getBoundingClientRect();
-      const dpr = Math.min(window.devicePixelRatio || 1, 3);
-      const nextScale = Math.max(1, dpr);
-      const nextWidth = Math.max(W, Math.round(rect.width * nextScale));
-      const nextHeight = Math.max(H, Math.round(rect.height * nextScale));
-      if (canvas.width !== nextWidth || canvas.height !== nextHeight || renderScale !== nextScale) {
-        canvas.width = nextWidth;
-        canvas.height = nextHeight;
-        renderScale = nextScale;
-      }
-    }
 
     const levels = [
       {
@@ -1270,7 +1256,6 @@
     }
 
     function draw(now) {
-      ctx.setTransform(renderScale, 0, 0, renderScale, 0, 0);
       drawBackground(now);
       ctx.save();
       ctx.translate(-state.cameraX, 0);
@@ -1939,7 +1924,6 @@
     }
 
     function loop(now) {
-      resizeCanvasForDisplay();
       const dt = Math.min(.033, (now - lastTime) / 1000);
       lastTime = now;
       update(dt, now);
@@ -2000,11 +1984,8 @@
     });
     closeLetter.addEventListener("click", resetGame);
 
-    window.addEventListener("resize", resizeCanvasForDisplay);
-    window.addEventListener("orientationchange", () => window.setTimeout(resizeCanvasForDisplay, 250));
     window.addEventListener("blur", () => keys.clear());
     resetGame();
-    resizeCanvasForDisplay();
     requestAnimationFrame(loop);
   </script>
 </body>
