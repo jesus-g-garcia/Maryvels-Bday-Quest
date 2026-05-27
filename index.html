@@ -58,18 +58,65 @@
     .stage-wrap {
       position: relative;
       min-width: 0;
+      display: flex;
+      flex-direction: column;
       border: 4px solid var(--clay);
       border-radius: 8px;
       overflow: hidden;
-      background: #74c7d7;
+      background: #1f66c7;
       box-shadow: 0 24px 54px var(--shadow);
     }
 
     canvas {
       display: block;
       width: 100%;
+      flex: 0 0 auto;
       aspect-ratio: 16 / 9;
       background: #74c7d7;
+    }
+
+    .quest-strip {
+      flex: 1 1 auto;
+      min-height: 82px;
+      display: grid;
+      grid-template-columns: 1.15fr .85fr 1fr;
+      gap: 10px;
+      align-items: stretch;
+      padding: 10px;
+      border-top: 4px solid var(--clay);
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.16) 25%, transparent 25% 50%, rgba(255,255,255,.16) 50% 75%, transparent 75%),
+        linear-gradient(90deg, #0067d8, #00a2ff 52%, #0067d8);
+      background-size: 32px 32px, auto;
+    }
+
+    .quest-chip {
+      min-width: 0;
+      display: grid;
+      align-content: center;
+      gap: 3px;
+      padding: 9px 11px;
+      border: 3px solid rgba(40, 25, 19, .78);
+      border-radius: 8px;
+      background: rgba(255, 247, 232, .92);
+      box-shadow: inset 0 -4px 0 rgba(0,0,0,.08);
+      font-weight: 900;
+      line-height: 1.1;
+    }
+
+    .quest-chip small {
+      color: #7a211f;
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .quest-chip span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: #17336f;
+      font-size: .96rem;
     }
 
     .papel {
@@ -87,7 +134,7 @@
 
     .mobile-pad {
       position: absolute;
-      inset: auto 12px 12px;
+      inset: auto 12px 92px;
       display: none;
       grid-template-columns: 132px 1fr 152px;
       gap: 12px;
@@ -310,6 +357,20 @@
         align-self: start;
       }
 
+      .quest-strip {
+        min-height: 68px;
+        grid-template-columns: 1fr 1fr;
+        padding: 8px;
+      }
+
+      .quest-chip {
+        padding: 7px 8px;
+      }
+
+      .quest-chip:nth-child(3) {
+        grid-column: 1 / -1;
+      }
+
       canvas {
         aspect-ratio: 16 / 9;
       }
@@ -330,6 +391,14 @@
 
       .papel {
         height: 44px;
+      }
+
+      .quest-strip {
+        min-height: 62px;
+      }
+
+      .quest-chip span {
+        font-size: .84rem;
       }
     }
 
@@ -361,6 +430,7 @@
 
       .mobile-pad {
         display: grid;
+        inset: auto 10px 76px;
       }
     }
   </style>
@@ -370,6 +440,20 @@
     <section class="stage-wrap">
       <div class="papel" aria-hidden="true"></div>
       <canvas id="game" width="1024" height="576" aria-label="Maryvel's Birthday Quest game board"></canvas>
+      <div class="quest-strip" aria-live="polite">
+        <div class="quest-chip">
+          <small>Objective</small>
+          <span id="questObjective">Collect every flower</span>
+        </div>
+        <div class="quest-chip">
+          <small>Power</small>
+          <span id="questPower">No colibrí</span>
+        </div>
+        <div class="quest-chip">
+          <small>Move Set</small>
+          <span id="questControls">Run · Jump · Stomp</span>
+        </div>
+      </div>
       <div class="mobile-pad" aria-label="iPhone controls">
         <div class="move-cluster">
           <button data-key="ArrowLeft" aria-label="Move left">◀</button>
@@ -423,6 +507,9 @@
     const heartEl = document.querySelector("#hearts");
     const timeEl = document.querySelector("#time");
     const statusEl = document.querySelector("#status");
+    const questObjectiveEl = document.querySelector("#questObjective");
+    const questPowerEl = document.querySelector("#questPower");
+    const questControlsEl = document.querySelector("#questControls");
     const musicButton = document.querySelector("#music");
     const prizeButton = document.querySelector("#openPrize");
     const restartButton = document.querySelector("#restart");
@@ -549,11 +636,15 @@
     }
 
     function updateHud() {
+      const remaining = state.level.flowers.filter(f => !f.got).length;
       levelEl.textContent = `${Math.min(state.levelIndex + 1, levels.length)}/${levels.length}`;
       flowerEl.textContent = `${state.totalCollected}/${state.totalFlowers}`;
       heartEl.textContent = state.hearts;
       timeEl.textContent = Math.max(0, Math.ceil(state.level.time));
       statusEl.textContent = state.won ? "Ready" : "Locked";
+      questObjectiveEl.textContent = state.won ? "Open the birthday gift" : remaining > 0 ? `${remaining} flowers before the gift` : "Reach the gift";
+      questPowerEl.textContent = state.player.ride ? `${colibriName(state.player.ride)} colibrí · ${Math.ceil(state.player.rideTimer)}s` : "No colibrí";
+      questControlsEl.textContent = state.player.ride ? "Run · Jump · Fireballs" : "Run · Jump · Stomp";
       prizeButton.disabled = !state.won;
     }
 
