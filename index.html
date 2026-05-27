@@ -532,61 +532,63 @@
     const levels = [
       {
         name: "Mercado de Flores",
-        width: 2300,
-        time: 115,
-        flowers: 8,
+        width: 2850,
+        time: 135,
+        flowers: 10,
         message: "Level 1: Mercado de Flores",
         palette: ["#28a8ff", "#76e4ff", "#14a05f"],
         platforms: [
           rect(0, GROUND_Y, 560, 76), rect(650, GROUND_Y, 420, 76), rect(1180, GROUND_Y, 460, 76), rect(1770, GROUND_Y, 530, 76),
-          rect(330, 398, 165, 24), rect(750, 350, 150, 24), rect(1040, 410, 150, 24), rect(1380, 338, 170, 24), rect(1645, 420, 145, 24)
+          rect(2420, GROUND_Y, 430, 76), rect(330, 398, 165, 24), rect(750, 350, 150, 24), rect(1040, 410, 150, 24), rect(1380, 338, 170, 24), rect(1645, 420, 145, 24),
+          rect(2120, 390, 145, 24), rect(2340, 342, 150, 24)
         ],
         moving: [],
-        flowersPos: [[210, 440], [390, 354], [790, 306], [1100, 366], [1438, 294], [1580, 452], [1855, 454], [2085, 432]],
+        flowersPos: [[210, 440], [390, 354], [790, 306], [1100, 366], [1438, 294], [1580, 452], [1855, 454], [2085, 346], [2388, 298], [2630, 440]],
         colibris: [{ x: 920, y: 250, type: "ruby" }],
         enemies: [{ x: 705, y: 462, min: 650, max: 1020, speed: 95 }, { x: 1250, y: 462, min: 1190, max: 1590, speed: 105 }],
         spikes: [],
-        gift: { x: 2200, y: 424 }
+        gift: { x: 2740, y: 424, giver: "Cristi" }
       },
       {
         name: "Pueblo Mágico Rooftops",
-        width: 2800,
-        time: 120,
-        flowers: 10,
+        width: 3450,
+        time: 145,
+        flowers: 12,
         message: "Level 2: Pueblo Mágico Rooftops",
         palette: ["#1399ff", "#8df1ff", "#ff4f5f"],
         platforms: [
           rect(0, GROUND_Y, 460, 76), rect(560, GROUND_Y, 380, 76), rect(1060, GROUND_Y, 330, 76), rect(1550, GROUND_Y, 310, 76), rect(2030, GROUND_Y, 770, 76),
+          rect(2920, GROUND_Y, 530, 76),
           rect(440, 402, 130, 22), rect(720, 342, 132, 22), rect(1010, 286, 130, 22), rect(1325, 372, 150, 22),
-          rect(1740, 318, 135, 22), rect(1990, 402, 150, 22), rect(2280, 332, 150, 22)
+          rect(1740, 318, 135, 22), rect(1990, 402, 150, 22), rect(2280, 332, 150, 22), rect(2740, 378, 135, 22), rect(3020, 330, 145, 22)
         ],
         moving: [{ x: 900, y: 430, w: 128, h: 20, min: 820, max: 1100, speed: 90 }, { x: 1900, y: 250, w: 120, h: 20, min: 1840, max: 2100, speed: 110 }],
-        flowersPos: [[180, 440], [495, 356], [780, 298], [1075, 242], [1375, 328], [1605, 452], [1800, 274], [2038, 358], [2334, 288], [2620, 440]],
+        flowersPos: [[180, 440], [495, 356], [780, 298], [1075, 242], [1375, 328], [1605, 452], [1800, 274], [2038, 358], [2334, 288], [2620, 440], [2796, 334], [3190, 440]],
         colibris: [{ x: 1165, y: 210, type: "emerald" }, { x: 2240, y: 245, type: "violet" }],
         enemies: [{ x: 600, y: 462, min: 565, max: 920, speed: 125 }, { x: 1570, y: 462, min: 1550, max: 1840, speed: 140 }, { x: 2180, y: 462, min: 2035, max: 2720, speed: 150 }],
         spikes: [rect(1125, 486, 42, 22), rect(2145, 486, 54, 22)],
-        gift: { x: 2708, y: 424 }
+        gift: { x: 3350, y: 424, giver: "Mom & Dad" }
       },
       {
         name: "Noche de Fiesta",
-        width: 3300,
-        time: 125,
-        flowers: 12,
+        width: 4050,
+        time: 155,
+        flowers: 15,
         message: "Level 3: Noche de Fiesta",
         palette: ["#184dff", "#c43dff", "#10155f"],
         platforms: [
           rect(0, GROUND_Y, 410, 76), rect(520, GROUND_Y, 270, 76), rect(930, GROUND_Y, 260, 76), rect(1340, GROUND_Y, 250, 76),
-          rect(1740, GROUND_Y, 290, 76), rect(2200, GROUND_Y, 300, 76), rect(2700, GROUND_Y, 600, 76),
+          rect(1740, GROUND_Y, 290, 76), rect(2200, GROUND_Y, 300, 76), rect(2700, GROUND_Y, 600, 76), rect(3520, GROUND_Y, 530, 76),
           rect(310, 382, 130, 20), rect(650, 318, 120, 20), rect(1040, 382, 130, 20), rect(1280, 304, 116, 20),
           rect(1540, 240, 116, 20), rect(1880, 352, 132, 20), rect(2135, 280, 116, 20), rect(2505, 352, 132, 20),
-          rect(2860, 312, 130, 20)
+          rect(2860, 312, 130, 20), rect(3180, 392, 130, 20), rect(3420, 322, 130, 20)
         ],
         moving: [{ x: 800, y: 420, w: 110, h: 18, min: 800, max: 1010, speed: 135 }, { x: 1665, y: 410, w: 112, h: 18, min: 1600, max: 1860, speed: 150 }, { x: 2390, y: 235, w: 105, h: 18, min: 2300, max: 2580, speed: 165 }],
-        flowersPos: [[180, 440], [362, 338], [700, 274], [980, 452], [1098, 338], [1328, 260], [1585, 196], [1940, 308], [2170, 236], [2450, 190], [2918, 268], [3130, 436]],
+        flowersPos: [[180, 440], [362, 338], [700, 274], [980, 452], [1098, 338], [1328, 260], [1585, 196], [1940, 308], [2170, 236], [2450, 190], [2918, 268], [3130, 348], [3260, 440], [3472, 278], [3800, 440]],
         colibris: [{ x: 510, y: 310, type: "gold" }, { x: 1420, y: 210, type: "ruby" }, { x: 2640, y: 270, type: "emerald" }],
         enemies: [{ x: 560, y: 462, min: 520, max: 780, speed: 165 }, { x: 940, y: 462, min: 930, max: 1180, speed: 175 }, { x: 1775, y: 462, min: 1740, max: 2020, speed: 185 }, { x: 2760, y: 462, min: 2700, max: 3240, speed: 195 }],
         spikes: [],
-        gift: { x: 3210, y: 424 }
+        gift: { x: 3910, y: 410, giver: "Memo", big: true }
       }
     ];
 
@@ -957,7 +959,7 @@
         }
       }
 
-      const giftBox = platformAt(level.gift.x - 4, level.gift.y - 44, 66, 76);
+      const giftBox = platformAt(level.gift.x - 12, level.gift.y - 54, level.gift.big ? 104 : 78, level.gift.big ? 118 : 88);
       const levelFlowersDone = level.flowers.every(f => f.got);
       if (overlaps(p, giftBox)) {
         if (levelFlowersDone) advanceLevel();
@@ -1064,6 +1066,7 @@
       drawRespawnMarker(now);
       for (const flower of state.level.flowers) drawFlower(flower, now);
       for (const colibri of state.level.colibris) drawColibri(colibri, now);
+      drawGiftGivers(state.level.gift, now);
       drawGift(state.level.gift, now);
       for (const enemy of state.level.enemies) drawAlebrije(enemy, now);
       for (const fireball of state.fireballs) drawFireball(fireball, now);
@@ -1414,16 +1417,75 @@
     }
 
     function drawGift(g, now) {
+      const size = g.big ? 1.35 : 1;
       const pulse = state.level.flowers.every(f => f.got) ? Math.sin(now / 180) * 4 : 0;
       ctx.fillStyle = state.level.flowers.every(f => f.got) ? "#f2b84b" : "#9d8276";
-      ctx.fillRect(g.x - pulse / 2, g.y - pulse / 2, 62 + pulse, 58 + pulse);
+      ctx.fillRect(g.x - pulse / 2, g.y - pulse / 2, 62 * size + pulse, 58 * size + pulse);
       ctx.fillStyle = state.level.flowers.every(f => f.got) ? "#d94f43" : "#6d5b55";
-      ctx.fillRect(g.x + 26, g.y - pulse / 2, 10, 58 + pulse);
-      ctx.fillRect(g.x - pulse / 2, g.y + 23, 62 + pulse, 10);
+      ctx.fillRect(g.x + 26 * size, g.y - pulse / 2, 10 * size, 58 * size + pulse);
+      ctx.fillRect(g.x - pulse / 2, g.y + 23 * size, 62 * size + pulse, 10 * size);
       ctx.beginPath();
-      ctx.arc(g.x + 22, g.y - 6, 12, 0, Math.PI * 2);
-      ctx.arc(g.x + 40, g.y - 6, 12, 0, Math.PI * 2);
+      ctx.arc(g.x + 22 * size, g.y - 6 * size, 12 * size, 0, Math.PI * 2);
+      ctx.arc(g.x + 40 * size, g.y - 6 * size, 12 * size, 0, Math.PI * 2);
       ctx.fill();
+    }
+
+    function drawGiftGivers(g, now) {
+      if (g.giver === "Cristi") {
+        drawGiftPerson(g.x - 48, 462, "#6b4bd8", "#7a3a24", "Cristi");
+      } else if (g.giver === "Mom & Dad") {
+        drawGiftPerson(g.x - 72, 462, "#d94f43", "#5d3423", "Mom");
+        drawGiftPerson(g.x - 24, 462, "#2866b1", "#4b2b1d", "Dad");
+      } else if (g.giver === "Memo") {
+        drawGiftPerson(g.x - 60, 462, "#168f76", "#3b2419", "Memo");
+      }
+    }
+
+    function drawGiftPerson(x, groundY, outfit, hair, label) {
+      ctx.save();
+      ctx.translate(x, groundY);
+      ctx.fillStyle = hair;
+      ctx.beginPath();
+      ctx.arc(0, -42, 18, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#b46f45";
+      ctx.beginPath();
+      ctx.arc(0, -38, 14, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = outfit;
+      ctx.beginPath();
+      ctx.moveTo(-21, -18);
+      ctx.lineTo(21, -18);
+      ctx.lineTo(14, 22);
+      ctx.lineTo(-14, 22);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "#fff7e8";
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(-18, -10);
+      ctx.lineTo(-34, 0);
+      ctx.moveTo(18, -10);
+      ctx.lineTo(34, 0);
+      ctx.stroke();
+      ctx.fillStyle = "#281913";
+      ctx.beginPath();
+      ctx.arc(-5, -40, 2, 0, Math.PI * 2);
+      ctx.arc(6, -40, 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#281913";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(1, -35, 5, .1 * Math.PI, .9 * Math.PI);
+      ctx.stroke();
+      ctx.fillStyle = "rgba(255,247,232,.92)";
+      ctx.fillRect(-30, 26, 60, 20);
+      ctx.fillStyle = "#7a211f";
+      ctx.font = "900 12px Avenir Next, Segoe UI, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(label, 0, 41);
+      ctx.textAlign = "left";
+      ctx.restore();
     }
 
     function drawPlayer(p, now) {
