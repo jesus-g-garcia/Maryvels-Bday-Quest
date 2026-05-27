@@ -1088,6 +1088,8 @@
       ctx.fillRect(0, 0, W, H);
 
       drawSunMoon(now);
+      drawGroundMountains(state.cameraX * .2, "#0a875b", 500, 98);
+      drawGroundMountains(state.cameraX * .36, "#076247", 500, 68);
     }
 
     function drawSunMoon(now) {
@@ -1116,8 +1118,24 @@
         drawPalmTree(x + 285, 500, 1.05);
         drawPalmTree(x + 335, 500, .82);
         drawCactus(x + 50, 500);
-        drawAltar(x + 190, 450, now);
       }
+    }
+
+    function drawGroundMountains(offset, color, groundY, height) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(-180, groundY);
+      for (let x = -180; x < W + 260; x += 220) {
+        const px = x - (offset % 220);
+        ctx.lineTo(px + 64, groundY - height * .55);
+        ctx.lineTo(px + 116, groundY - height);
+        ctx.lineTo(px + 176, groundY - height * .45);
+        ctx.lineTo(px + 220, groundY);
+      }
+      ctx.lineTo(W + 260, H);
+      ctx.lineTo(-180, H);
+      ctx.closePath();
+      ctx.fill();
     }
 
     function drawPalmTree(x, y, scale) {
@@ -1177,20 +1195,6 @@
       ctx.fillRect(x + 18, y - 56, 25, 17);
       ctx.beginPath();
       ctx.arc(x + 11, y - 72, 11, Math.PI, 0);
-      ctx.fill();
-    }
-
-    function drawAltar(x, y, now) {
-      ctx.fillStyle = "#7a321f";
-      ctx.fillRect(x, y - 42, 82, 42);
-      ctx.fillStyle = "#f2b84b";
-      ctx.fillRect(x + 8, y - 58, 66, 16);
-      ctx.fillStyle = "#d94f43";
-      ctx.fillRect(x + 18, y - 74, 46, 16);
-      ctx.fillStyle = "#fff7e8";
-      ctx.beginPath();
-      ctx.arc(x + 24, y - 83 + Math.sin(now / 220) * 2, 5, 0, Math.PI * 2);
-      ctx.arc(x + 58, y - 83 + Math.cos(now / 260) * 2, 5, 0, Math.PI * 2);
       ctx.fill();
     }
 
