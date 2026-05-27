@@ -959,7 +959,7 @@
         }
       }
 
-      const giftBox = platformAt(level.gift.x - 12, level.gift.y - 54, level.gift.big ? 104 : 78, level.gift.big ? 118 : 88);
+      const giftBox = platformAt(level.gift.x - 96, level.gift.y - 82, level.gift.big ? 168 : 132, level.gift.big ? 130 : 104);
       const levelFlowersDone = level.flowers.every(f => f.got);
       if (overlaps(p, giftBox)) {
         if (levelFlowersDone) advanceLevel();
@@ -1067,7 +1067,6 @@
       for (const flower of state.level.flowers) drawFlower(flower, now);
       for (const colibri of state.level.colibris) drawColibri(colibri, now);
       drawGiftGivers(state.level.gift, now);
-      drawGift(state.level.gift, now);
       for (const enemy of state.level.enemies) drawAlebrije(enemy, now);
       for (const fireball of state.fireballs) drawFireball(fireball, now);
       drawPlayer(state.player, now);
@@ -1432,13 +1431,38 @@
 
     function drawGiftGivers(g, now) {
       if (g.giver === "Cristi") {
-        drawGiftPerson(g.x - 48, 462, "#6b4bd8", "#7a3a24", "Cristi");
+        drawGiftPerson(g.x - 46, 462, "#6b4bd8", "#7a3a24", "Cristi");
+        drawHeldGift(g.x - 20, 430, g.big, now);
       } else if (g.giver === "Mom & Dad") {
-        drawGiftPerson(g.x - 72, 462, "#d94f43", "#5d3423", "Mom");
-        drawGiftPerson(g.x - 24, 462, "#2866b1", "#4b2b1d", "Dad");
+        drawGiftPerson(g.x - 84, 462, "#d94f43", "#5d3423", "Mom");
+        drawGiftPerson(g.x - 6, 462, "#2866b1", "#4b2b1d", "Dad");
+        drawHeldGift(g.x - 46, 430, g.big, now);
       } else if (g.giver === "Memo") {
-        drawGiftPerson(g.x - 60, 462, "#168f76", "#3b2419", "Memo");
+        drawGiftPerson(g.x - 70, 462, "#168f76", "#3b2419", "Memo");
+        drawHeldGift(g.x - 26, 410, g.big, now);
       }
+    }
+
+    function drawHeldGift(x, y, big, now) {
+      const size = big ? 1.28 : .9;
+      const pulse = state.level.flowers.every(f => f.got) ? Math.sin(now / 180) * 3 : 0;
+      const w = 62 * size + pulse;
+      const h = 58 * size + pulse;
+      ctx.save();
+      ctx.translate(x - pulse / 2, y - pulse / 2);
+      ctx.fillStyle = state.level.flowers.every(f => f.got) ? "#f2b84b" : "#9d8276";
+      ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = state.level.flowers.every(f => f.got) ? "#d94f43" : "#6d5b55";
+      ctx.fillRect(26 * size, 0, 10 * size, h);
+      ctx.fillRect(0, 23 * size, w, 10 * size);
+      ctx.beginPath();
+      ctx.arc(22 * size, -6 * size, 12 * size, 0, Math.PI * 2);
+      ctx.arc(40 * size, -6 * size, 12 * size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#7a211f";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(0, 0, w, h);
+      ctx.restore();
     }
 
     function drawGiftPerson(x, groundY, outfit, hair, label) {
@@ -1464,9 +1488,9 @@
       ctx.lineWidth = 5;
       ctx.beginPath();
       ctx.moveTo(-18, -10);
-      ctx.lineTo(-34, 0);
+      ctx.lineTo(-33, -28);
       ctx.moveTo(18, -10);
-      ctx.lineTo(34, 0);
+      ctx.lineTo(33, -28);
       ctx.stroke();
       ctx.fillStyle = "#281913";
       ctx.beginPath();
