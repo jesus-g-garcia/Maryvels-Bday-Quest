@@ -1090,11 +1090,64 @@
     function drawWorldDecor(now) {
       const start = Math.floor(state.cameraX / 360) * 360 - 360;
       for (let x = start; x < state.cameraX + W + 480; x += 360) {
+        drawPalmTree(x + 285, 500, 1.05);
+        drawPalmTree(x + 335, 500, .82);
         drawCactus(x + 50, 500);
         drawAltar(x + 190, 450, now);
         drawPapelLine(x + 20, 118, 260);
       }
     }
+
+    function drawPalmTree(x, y, scale) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(scale, scale);
+      ctx.fillStyle = "#8b4d1f";
+      ctx.beginPath();
+      ctx.moveTo(-10, 0);
+      ctx.quadraticCurveTo(-2, -72, -8, -150);
+      ctx.lineTo(10, -150);
+      ctx.quadraticCurveTo(18, -72, 10, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "rgba(40,25,19,.35)";
+      ctx.lineWidth = 3;
+      for (let i = -132; i < -14; i += 24) {
+        ctx.beginPath();
+        ctx.moveTo(-7, i);
+        ctx.lineTo(11, i + 12);
+        ctx.stroke();
+      }
+      ctx.translate(0, -158);
+      const leaves = [
+        [-74, -10, -22, 6],
+        [-58, -42, -16, -6],
+        [-18, -70, -2, -10],
+        [34, -58, 12, -6],
+        [72, -20, 22, 6],
+        [46, 16, 14, 10],
+        [-42, 18, -14, 10]
+      ];
+      for (const [cx, cy, ex, ey] of leaves) {
+        ctx.fillStyle = "#00a85a";
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.quadraticCurveTo(cx * .55, cy, cx, cy + 10);
+        ctx.quadraticCurveTo(ex, ey, 0, 0);
+        ctx.fill();
+        ctx.strokeStyle = "#006b3f";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+      ctx.fillStyle = "#7a321f";
+      ctx.beginPath();
+      ctx.arc(-9, 2, 7, 0, Math.PI * 2);
+      ctx.arc(5, 8, 7, 0, Math.PI * 2);
+      ctx.arc(9, -4, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
     function drawCactus(x, y) {
       ctx.fillStyle = "#168f76";
       ctx.fillRect(x, y - 72, 22, 72);
