@@ -661,7 +661,17 @@
 
     function startAudio() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === "suspended") audioCtx.resume();
+      if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
+    }
+
+    function startMusic() {
+      startAudio();
+      if (musicOn) return;
+      musicOn = true;
+      musicButton.textContent = "Stop Music";
+      playMusicTick();
+      window.clearInterval(musicTimer);
+      musicTimer = window.setInterval(playMusicTick, 240);
     }
 
     function tone(freq, duration = .12, type = "sine", gain = .045, delay = 0) {
@@ -716,15 +726,13 @@
     }
 
     function toggleMusic() {
-      startAudio();
-      musicOn = !musicOn;
-      musicButton.textContent = musicOn ? "Stop Music" : "Start Music";
-      if (musicOn) {
-        playMusicTick();
-        musicTimer = window.setInterval(playMusicTick, 240);
-      } else {
-        window.clearInterval(musicTimer);
+      if (!musicOn) {
+        startMusic();
+        return;
       }
+      musicOn = false;
+      musicButton.textContent = "Start Music";
+      window.clearInterval(musicTimer);
     }
 
     function playMusicTick() {
@@ -1079,10 +1087,7 @@
       ctx.fillStyle = sky;
       ctx.fillRect(0, 0, W, H);
 
-      const cam = state.cameraX;
       drawSunMoon(now);
-      drawMountains(cam * .18, "#1cbb73", 350, 112);
-      drawMountains(cam * .32, "#087a57", 414, 88);
     }
 
     function drawSunMoon(now) {
@@ -1103,21 +1108,6 @@
           ctx.fillRect(x, y, 3, 3);
         }
       }
-    }
-
-    function drawMountains(offset, color, base, height) {
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.moveTo(-120, base);
-      for (let x = -120; x < W + 180; x += 180) {
-        const px = x - (offset % 180);
-        ctx.lineTo(px + 90, base - height);
-        ctx.lineTo(px + 180, base);
-      }
-      ctx.lineTo(W + 180, H);
-      ctx.lineTo(-120, H);
-      ctx.closePath();
-      ctx.fill();
     }
 
     function drawWorldDecor(now) {
@@ -1608,6 +1598,11 @@
     });
 
     musicButton.addEventListener("click", toggleMusic);
+    window.addEventListener("load", () => {
+      startMusic();
+      window.setTimeout(startMusic, 350);
+    });
+    window.addEventListener("pointerdown", startAudio, { once: false });
     restartButton.addEventListener("click", resetGame);
     prizeButton.addEventListener("click", () => {
       if (state.won) overlay.classList.add("open");
