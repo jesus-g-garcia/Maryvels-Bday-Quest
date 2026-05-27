@@ -119,6 +119,41 @@
       font-size: .96rem;
     }
 
+    .play-hud {
+      position: absolute;
+      inset: 30px 12px auto;
+      z-index: 5;
+      display: none;
+      grid-template-columns: repeat(4, auto);
+      gap: 8px;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    .play-pill,
+    .play-exit {
+      min-width: 74px;
+      padding: 7px 10px;
+      border: 2px solid rgba(40, 25, 19, .72);
+      border-radius: 8px;
+      background: rgba(255, 247, 232, .9);
+      color: #17336f;
+      font-weight: 950;
+      line-height: 1;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,.16);
+    }
+
+    .play-exit {
+      pointer-events: auto;
+      border-radius: 8px;
+      background: rgba(122, 33, 31, .94);
+      color: #fff7e8;
+      font: inherit;
+      font-weight: 950;
+      cursor: pointer;
+    }
+
     .papel {
       position: absolute;
       inset: 0 0 auto;
@@ -376,6 +411,10 @@
       .mobile-pad {
         display: grid;
       }
+
+      .play-hud {
+        display: grid;
+      }
     }
 
     @media (max-width: 560px) {
@@ -430,6 +469,87 @@
         display: grid;
         inset: auto 10px 76px;
       }
+
+      .game-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .hud {
+        display: none;
+      }
+
+      .stage-wrap {
+        height: calc(100vh - 12px);
+        height: calc(100dvh - 12px);
+      }
+
+      canvas {
+        flex: 1 1 auto;
+        height: min(100%, calc(100dvh - 76px));
+        aspect-ratio: auto;
+      }
+
+      .quest-strip {
+        min-height: 64px;
+      }
+    }
+
+    .fullscreen-mode {
+      padding: 0;
+      background: #000;
+    }
+
+    .fullscreen-mode .game-shell,
+    .fullscreen-mode .stage-wrap,
+    .stage-wrap:fullscreen {
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      max-width: none;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+      background: #000;
+    }
+
+    .fullscreen-mode .game-shell {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: block;
+    }
+
+    .fullscreen-mode .hud {
+      display: none;
+    }
+
+    .fullscreen-mode .stage-wrap,
+    .stage-wrap:fullscreen {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .fullscreen-mode canvas,
+    .stage-wrap:fullscreen canvas {
+      flex: 1 1 auto;
+      height: calc(100dvh - 76px);
+      aspect-ratio: auto;
+    }
+
+    .fullscreen-mode .quest-strip,
+    .stage-wrap:fullscreen .quest-strip {
+      min-height: 76px;
+    }
+
+    .fullscreen-mode .play-hud,
+    .stage-wrap:fullscreen .play-hud {
+      display: grid;
+    }
+
+    .fullscreen-mode .mobile-pad,
+    .stage-wrap:fullscreen .mobile-pad {
+      display: grid;
+      inset: auto 12px 86px;
     }
   </style>
 </head>
@@ -437,6 +557,13 @@
   <main class="game-shell" aria-label="Maryvel birthday platform game">
     <section class="stage-wrap">
       <div class="papel" aria-hidden="true"></div>
+      <div class="play-hud" aria-live="polite">
+        <div class="play-pill">♥ <span id="playHearts">4</span></div>
+        <div class="play-pill">⏱ <span id="playTime">120</span></div>
+        <div class="play-pill">L <span id="playLevel">1/3</span></div>
+        <div class="play-pill">✿ <span id="playFlowers">0/0</span></div>
+        <button class="play-exit" id="playExitFullscreen" type="button">Exit</button>
+      </div>
       <canvas id="game" width="1024" height="576" aria-label="Maryvel's Birthday Quest game board"></canvas>
       <div class="quest-strip" aria-live="polite">
         <div class="quest-chip">
@@ -480,6 +607,7 @@
       <div class="action-row">
         <button id="music">Start Music</button>
         <button id="restart">Restart</button>
+        <button id="fullscreen">Full Screen</button>
         <button id="openPrize" disabled>Open Birthday Gift</button>
       </div>
 
@@ -500,17 +628,24 @@
   <script>
     const canvas = document.querySelector("#game");
     const ctx = canvas.getContext("2d");
+    const stageWrap = document.querySelector(".stage-wrap");
     const levelEl = document.querySelector("#level");
     const flowerEl = document.querySelector("#flowers");
     const heartEl = document.querySelector("#hearts");
     const timeEl = document.querySelector("#time");
     const statusEl = document.querySelector("#status");
+    const playHeartsEl = document.querySelector("#playHearts");
+    const playTimeEl = document.querySelector("#playTime");
+    const playLevelEl = document.querySelector("#playLevel");
+    const playFlowersEl = document.querySelector("#playFlowers");
     const questObjectiveEl = document.querySelector("#questObjective");
     const questPowerEl = document.querySelector("#questPower");
     const questControlsEl = document.querySelector("#questControls");
     const musicButton = document.querySelector("#music");
     const prizeButton = document.querySelector("#openPrize");
     const restartButton = document.querySelector("#restart");
+    const fullscreenButton = document.querySelector("#fullscreen");
+    const playExitFullscreen = document.querySelector("#playExitFullscreen");
     const overlay = document.querySelector("#letterOverlay");
     const closeLetter = document.querySelector("#closeLetter");
 
@@ -638,15 +773,60 @@
 
     function updateHud() {
       const remaining = state.level.flowers.filter(f => !f.got).length;
-      levelEl.textContent = `${Math.min(state.levelIndex + 1, levels.length)}/${levels.length}`;
-      flowerEl.textContent = `${state.totalCollected}/${state.totalFlowers}`;
-      heartEl.textContent = state.hearts;
-      timeEl.textContent = Math.max(0, Math.ceil(state.level.time));
+      const levelText = `${Math.min(state.levelIndex + 1, levels.length)}/${levels.length}`;
+      const flowerText = `${state.totalCollected}/${state.totalFlowers}`;
+      const heartText = state.hearts;
+      const timeText = Math.max(0, Math.ceil(state.level.time));
+      levelEl.textContent = levelText;
+      flowerEl.textContent = flowerText;
+      heartEl.textContent = heartText;
+      timeEl.textContent = timeText;
+      playLevelEl.textContent = levelText;
+      playFlowersEl.textContent = flowerText;
+      playHeartsEl.textContent = heartText;
+      playTimeEl.textContent = timeText;
       statusEl.textContent = state.won ? "Ready" : "Locked";
       questObjectiveEl.textContent = state.won ? "Open the birthday gift" : remaining > 0 ? `${remaining} flowers before the gift` : "Reach the gift";
       questPowerEl.textContent = state.player.ride ? `${colibriName(state.player.ride)} colibrí · ${Math.ceil(state.player.rideTimer)}s` : "No colibrí";
       questControlsEl.textContent = state.player.ride ? "Run · Jump · Fireballs" : "Run · Jump · Stomp";
       prizeButton.disabled = !state.won;
+    }
+
+    function isFullscreenActive() {
+      return document.fullscreenElement === stageWrap || document.body.classList.contains("fullscreen-mode");
+    }
+
+    async function enterFullscreen() {
+      startAudio();
+      try {
+        if (stageWrap.requestFullscreen) {
+          await stageWrap.requestFullscreen();
+        } else {
+          document.body.classList.add("fullscreen-mode");
+        }
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock("landscape").catch(() => {});
+        }
+      } catch (error) {
+        document.body.classList.add("fullscreen-mode");
+      }
+      fullscreenButton.textContent = "Exit Full Screen";
+    }
+
+    async function exitFullscreen() {
+      if (document.fullscreenElement && document.exitFullscreen) {
+        await document.exitFullscreen().catch(() => {});
+      }
+      document.body.classList.remove("fullscreen-mode");
+      fullscreenButton.textContent = "Full Screen";
+    }
+
+    function toggleFullscreen() {
+      if (isFullscreenActive()) {
+        exitFullscreen();
+      } else {
+        enterFullscreen();
+      }
     }
 
     function clamp(value, min, max) {
@@ -1733,6 +1913,16 @@
     });
 
     musicButton.addEventListener("click", toggleMusic);
+    fullscreenButton.addEventListener("click", toggleFullscreen);
+    playExitFullscreen.addEventListener("click", exitFullscreen);
+    document.addEventListener("fullscreenchange", () => {
+      if (!document.fullscreenElement) {
+        document.body.classList.remove("fullscreen-mode");
+        fullscreenButton.textContent = "Full Screen";
+      } else {
+        fullscreenButton.textContent = "Exit Full Screen";
+      }
+    });
     window.addEventListener("load", () => {
       startMusic();
       window.setTimeout(startMusic, 350);
