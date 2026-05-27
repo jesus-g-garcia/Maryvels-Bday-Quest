@@ -1115,24 +1115,29 @@
       for (let x = start; x < state.cameraX + W + 480; x += 360) {
         drawGroundedHills(x + 132, 500, 190, "#0a875b");
         drawGroundedHills(x + 204, 500, 150, "#076247");
-        drawIfGrounded(x + 285, 500, () => drawPalmTree(x + 285, 500, 1.05));
-        drawIfGrounded(x + 335, 500, () => drawPalmTree(x + 335, 500, .82));
-        drawIfGrounded(x + 50, 500, () => drawCactus(x + 50, 500));
+        drawPalmIfGrounded(x + 285, 500, 1.05);
+        drawPalmIfGrounded(x + 335, 500, .82);
+        drawIfGrounded(x + 50, 500, 34, () => drawCactus(x + 50, 500));
       }
     }
 
-    function hasGroundAt(x, y = GROUND_Y) {
+    function hasGroundSpan(left, right, y = GROUND_Y) {
       return state.level.platforms.some(platform =>
-        platform.y === y && x >= platform.x + 18 && x <= platform.x + platform.w - 18
+        platform.y === y && left >= platform.x + 24 && right <= platform.x + platform.w - 24
       );
     }
 
-    function drawIfGrounded(x, y, drawFn) {
-      if (hasGroundAt(x, y)) drawFn();
+    function drawIfGrounded(x, y, footprint, drawFn) {
+      if (hasGroundSpan(x - footprint, x + footprint, y)) drawFn();
+    }
+
+    function drawPalmIfGrounded(x, y, scale) {
+      const footprint = 58 * scale;
+      if (hasGroundSpan(x - footprint, x + footprint, y)) drawPalmTree(x, y, scale);
     }
 
     function drawGroundedHills(x, groundY, width, color) {
-      if (!hasGroundAt(x, groundY) || !hasGroundAt(x + width * .5, groundY) || !hasGroundAt(x + width, groundY)) return;
+      if (!hasGroundSpan(x, x + width, groundY)) return;
       ctx.fillStyle = color;
       ctx.beginPath();
       ctx.moveTo(x, groundY);
