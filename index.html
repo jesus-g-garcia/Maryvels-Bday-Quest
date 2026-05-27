@@ -594,7 +594,7 @@
 
     <aside class="hud">
       <h1>Maryvel's Birthday Quest</h1>
-      <p class="subtitle">Run, jump, and collect cempasúchil flowers through three Mexican-inspired birthday levels.</p>
+      <p class="subtitle">Run, jump, and collect cempasúchil flowers through four Mexican-inspired birthday levels.</p>
 
       <div class="stats" aria-live="polite">
         <div class="stat">Level <span id="level">1/3</span></div>
@@ -666,11 +666,30 @@
 
     const levels = [
       {
+        name: "Ramona's Birthday Start",
+        width: 1600,
+        time: 95,
+        flowers: 5,
+        message: "Level 1: Ramona's Birthday Start",
+        palette: ["#28a8ff", "#95ecff", "#18b76b"],
+        platforms: [
+          rect(0, GROUND_Y, 620, 76), rect(760, GROUND_Y, 360, 76), rect(1240, GROUND_Y, 360, 76),
+          rect(430, 392, 140, 24), rect(720, 350, 150, 24), rect(1040, 402, 130, 24)
+        ],
+        moving: [],
+        flowersPos: [[260, 440], [500, 348], [790, 306], [1060, 358], [1380, 440]],
+        colibris: [{ x: 900, y: 245, type: "emerald" }],
+        enemies: [{ x: 805, y: 462, min: 760, max: 1080, speed: 90 }],
+        spikes: [],
+        gift: { x: 1490, y: 424, giver: "Ramona" },
+        ramona: { x: 170, y: 462 }
+      },
+      {
         name: "Mercado de Flores",
         width: 2850,
         time: 135,
         flowers: 10,
-        message: "Level 1: Mercado de Flores",
+        message: "Level 2: Mercado de Flores",
         palette: ["#28a8ff", "#76e4ff", "#14a05f"],
         platforms: [
           rect(0, GROUND_Y, 560, 76), rect(650, GROUND_Y, 420, 76), rect(1180, GROUND_Y, 460, 76), rect(1770, GROUND_Y, 530, 76),
@@ -689,7 +708,7 @@
         width: 3450,
         time: 145,
         flowers: 12,
-        message: "Level 2: Pueblo Mágico Rooftops",
+        message: "Level 3: Pueblo Mágico Rooftops",
         palette: ["#1399ff", "#8df1ff", "#ff4f5f"],
         platforms: [
           rect(0, GROUND_Y, 460, 76), rect(560, GROUND_Y, 380, 76), rect(1060, GROUND_Y, 330, 76), rect(1550, GROUND_Y, 310, 76), rect(2030, GROUND_Y, 770, 76),
@@ -709,7 +728,7 @@
         width: 4050,
         time: 155,
         flowers: 15,
-        message: "Level 3: Noche de Fiesta",
+        message: "Level 4: Noche de Fiesta",
         palette: ["#184dff", "#c43dff", "#10155f"],
         platforms: [
           rect(0, GROUND_Y, 410, 76), rect(520, GROUND_Y, 270, 76), rect(930, GROUND_Y, 260, 76), rect(1340, GROUND_Y, 250, 76),
@@ -1244,6 +1263,7 @@
       drawPlatforms();
       drawSpikes();
       drawRespawnMarker(now);
+      if (state.level.ramona) drawRamonaIntro(state.level.ramona, now);
       for (const flower of state.level.flowers) drawFlower(flower, now);
       for (const colibri of state.level.colibris) drawColibri(colibri, now);
       drawGiftGivers(state.level.gift, now);
@@ -1294,7 +1314,7 @@
 
     function drawWorldDecor(now) {
       const start = Math.floor(state.cameraX / 360) * 360 - 360;
-      if (state.levelIndex === 0) drawMayanPyramidIfGrounded(42, 500, .7);
+      if (state.levelIndex === 1) drawMayanPyramidIfGrounded(42, 500, .7);
       for (let x = start; x < state.cameraX + W + 480; x += 360) {
         drawGroundedHills(x + 132, 500, 190, "#0a875b");
         drawGroundedHills(x + 204, 500, 150, "#076247");
@@ -1646,7 +1666,10 @@
     }
 
     function drawGiftGivers(g, now) {
-      if (g.giver === "Cristi") {
+      if (g.giver === "Ramona") {
+        drawGiftPerson(g.x - 48, 462, "#f2b84b", "#6b3b25", "Ramona", .82);
+        drawHeldGift(g.x - 20, 432, false, now);
+      } else if (g.giver === "Cristi") {
         drawGiftPerson(g.x - 46, 462, "#6b4bd8", "#7a3a24", "Cristi");
         drawHeldGift(g.x - 20, 430, g.big, now);
       } else if (g.giver === "Mom & Dad") {
@@ -1681,9 +1704,36 @@
       ctx.restore();
     }
 
-    function drawGiftPerson(x, groundY, outfit, hair, label) {
+    function drawRamonaIntro(ramona, now) {
+      drawGiftPerson(ramona.x, ramona.y, "#f2b84b", "#6b3b25", "Ramona", .82);
+      const bob = Math.sin(now / 260) * 3;
+      ctx.save();
+      ctx.translate(ramona.x + 44, ramona.y - 120 + bob);
+      ctx.fillStyle = "rgba(255,247,232,.96)";
+      ctx.strokeStyle = "#7a211f";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(0, 0, 210, 54, 8);
+      ctx.fill();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(20, 50);
+      ctx.lineTo(1, 70);
+      ctx.lineTo(48, 52);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#7a211f";
+      ctx.font = "900 17px Avenir Next, Segoe UI, sans-serif";
+      ctx.fillText("Happy Birthday", 18, 23);
+      ctx.fillText("Mommy!", 18, 43);
+      ctx.restore();
+    }
+
+    function drawGiftPerson(x, groundY, outfit, hair, label, scale = 1) {
       ctx.save();
       ctx.translate(x, groundY);
+      ctx.scale(scale, scale);
       ctx.fillStyle = hair;
       ctx.beginPath();
       ctx.arc(0, -42, 18, 0, Math.PI * 2);
